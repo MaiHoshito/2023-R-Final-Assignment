@@ -1,0 +1,174 @@
+---
+title:  "Antenatal Care Completion and City Accessibility in Nepal: A Demographic Health Survey Data Analysis"
+author: "邓心仪 22213711"
+date: "2023-06-26"
+output: 
+  bookdown::pdf_document2: 
+    citation_package: biblatex
+    number_sections: TRUE
+    latex_engine: xelatex
+    extra_dependencies: 
+       fancyhdr: NULL
+      # amsmath: NULL
+       xcolor: NULL
+       ctex: [scheme=plain]
+       caption: [labelsep=space]
+       setspace: NULL
+       titling: NULL
+geometry: "left=2cm,right=2cm,top=2cm,bottom=2cm"
+fontsize: 12pt
+mainfont: "Times New Roman"
+indent: TRUE
+toc: FALSE
+bibliography: final-citation.bib
+biblio-style: nejm
+# csl: "environment-international.csl"
+---
+\definecolor{shadecolor}{RGB}{240, 240, 240}
+\setlength{\droptitle}{-10cm}
+<!-- \counterwithin{table}{section}
+\counterwithin{figure}{section} -->
+\counterwithout{table}{section}
+\counterwithout{figure}{section}
+\doublespacing
+\pagestyle{fancy}
+\fancyhf{} 
+<!-- clean pre-define to remove section names  -->
+\fancyhead[R]{2023 R for Applied Epidemiology Final Report}
+\fancyfoot[C]{\thepage}
+
+
+```{r global options, include=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE,
+  tidy.opts = list(width.cutoff = 60),
+  tidy = TRUE,
+  # fig.show = "hold",
+  fig.pos = "H",
+  fig.align = "center",
+  digits = 2
+)
+```
+```{r load packages, include=FALSE}
+pacman::p_load(
+  data.table,
+  knitr,
+  kableExtra,
+  stringr,
+  formatR,
+  ggplot2,
+  ggpubr,
+  openxlsx
+)
+result_list <- readRDS("midfile.RDS")
+```
+
+# Introduction
+
+Antenatal care (ANC) is an important aspect of maternal and neonatal health.
+According to the World Health Organization (WHO), sufficient ANC for uncomplicated pregnancies entails a minimum of four healthcare visits[@who2017].
+ANC promotes healthy behaviors during pregnancy, provides social, emotional, and psychological support, and fosters family interactions and bonding. By preventing potential health risks and promoting the health of mother and neonate, ANC can reduce the frequency of maternal deaths, low birth weight, and miscarriages[@unicef2021antenatal].
+
+Accessibility to major cities can be measured by various indicators, such as distance, travel time, transportation cost, road quality, and availability of public transport[@wbwaterdata]. Accessibility can affect ANC completion rates by influencing the availability, affordability, acceptability, and quality of ANC services, as well as the demand and utilization of these services by pregnant women. In general, women who live closer to major cities may have more options and opportunities to access ANC services than women who live in remote areas. Conversely, women who face long distances, high costs, or poor roads may face barriers and challenges to access ANC services[@steinbrook2021].
+
+In this study, we aim to examine the association between ANC completion rates and accessibility to major cities in Nepal, based on the open-access Demographic Health Survey (DHS) data using logistic analysis. Our study will provide insights into the spatial patterns and determinants of ANC accessibility in Nepal and will offer policy recommendations to improve maternal health care access and equity.
+
+# Methods
+## DHS data
+
+This study used data from the 2016 Nepal Demographic and Health Surveys Program, a nationally representative sample of 12,862 women age 15--49 in 11,040 surveyed households and 4,063 men age 15--49 in half of the surveyed households were interviewed. This represents a response rate of 98% of women and 96% of men. The 2016 DHS provides reliable estimates at the national level, for urban and rural areas, three ecological zones, five development regions, and seven provinces[@DHS2016]. Information on basic demographic and health outcomes was collected through questionnaires and can be obtained by visiting the DHS program website[@DHSProgram].
+
+Our analyses focused on 4,008 women who had given birth within the five years prior to the survey, from a total of 383 clusters.
+
+## Antenatal care completion
+
+The outcome of interest in this study was the completion of antenatal care. The dependent variable, ANC completion, was coded as 1 for women who completed the recommended number of ANC visits and 0 for those who did not.
+
+## Accessibility to major cities
+
+The grid data of accessibility to cities quantifies the travel time in minute to the nearest urban center via surface transport in 2015. This dataset was created by the Malaria Atlas Project (MAP) at a 30 arc second spatial resolution (approximately 1 km at the equator) and is available through open-access sources[@acce]. 
+
+## Statistical Analysis
+This study used logistic regression analysis to examine the association between ANC completion rates and accessibility to major cities in Nepal. The main independent variables were accessibility to major cities, measured as the travel time from the woman's residence to the nearest major city, and access to media.
+
+Potential confounding factors, including maternal age, religion, ethnicity, education, and wealth, were controlled for in the model. Access to media was also included as an independent variable.
+
+The logistic regression model was estimated using maximum likelihood methods and odds ratios with 95% confidence intervals were reported. R software (version 4.2.3) was used for all statistical analyses[@R2023].
+
+
+# Results
+##  Basic characteristics 
+Table 1 shows the demographic characteristics of the participants in the study. The mean age of the 4,008 participants was 19.9 years, ranging from 11 to 42 years. About 70% of the participants completed antenatal care according to the WHO guidelines, which recommend at least four visits during pregnancy. Information on other variables such as education level, religion, wealth, and ethnicity is also presented in table 1.
+
+```{r table1, echo=FALSE, warning=FALSE}
+tab1 <- result_list$tab1
+options(knitr.kable.NA = "")
+
+knitr::kable(
+  tab1,
+  caption = "Demographic characteristics of the participants",
+  col.names = c("Characteristic", "N", "Mean (SD), %"),
+  format = "latex",
+  align = "l",
+  booktabs = TRUE,
+  # longtable = TRUE,
+  linesep = "\\addlinespace[4pt]",
+  escape = TRUE
+) %>%
+  kableExtra::kable_styling(
+    position = "center",
+    #  latex_options = "HOLD_position"
+    latex_options = "basic",
+    full_width = TRUE
+    #   # repeat_header_continued = TRUE
+  ) %>%
+  kableExtra::column_spec(c(1, 2, 3), width = c("6cm", "4cm", "4cm"))
+```
+
+
+As presented in Figure 1, the accessibility to major cities demonstrated an increasing trend from north to south (Figure 1A), due to the presence of the Alpine zone and the permanent snow line in the northern regions. Accordingly, the residential locations of the studied clusters were evenly distributed throughout Nepal, except for these northern regions (Figure 1B).
+
+```{r fig1, echo=FALSE, fig.height=4, fig.width=9.6, fig.cap="Spitial distribution of participants and accessibility to major cities in Nepal", fig.align="center"}
+fig1 <- result_list$fig1
+plot(fig1)
+```
+
+## Association between ANC completion and accessibility to major cities
+
+As shown in Table 2, the logistic regression model estimated that for every unit increase in travel time (measured in minutes) to the nearest urban center, the expected log-odds of completing the recommended number of ANC visits decreases by 0.0024 units, indicating a decrease in the odds of completing the recommended number of ANC visits by a factor of 0.998, holding all other variables constant. This association was found to be statistically significant, with a p-value less than 0.01.
+
+```{r table2, echo=FALSE, warning=FALSE}
+tab2 <- result_list$tab2
+options(knitr.kable.NA = "")
+
+knitr::kable(
+  tab2[, c(1, 6, 5)],
+  caption = "Association between access time and ANC completion",
+  format = "latex",
+  align = "l",
+  booktabs = TRUE,
+  linesep = "\\addlinespace[4pt]",
+  escape = TRUE
+) %>%
+  kableExtra::kable_styling(
+    position = "center",
+    latex_options = "hold_position"
+  ) %>%
+  kableExtra::column_spec(c(1, 2, 3), width = c("7cm", "6cm", "2.5cm"))
+```
+
+\newpage{}
+
+# Conclusion
+
+This study examined the association between ANC completion and accessibility to major cities in Nepal using logistic regression analysis. The results showed that there is a statistically significant association between the accessibility to major cities and ANC completion, with longer travel times to major cities being associated with lower odds of completing the recommended number of ANC visits.
+
+These findings suggest that improving accessibility to major cities in Nepal may be an effective way to increase ANC completion rates and improve maternal health outcomes. Policy recommendations could include investing in transportation infrastructure, such as building or improving roads and public transportation systems, to reduce travel times to major cities. Additionally, increasing the availability of ANC services in rural areas, such as through mobile clinics or telemedicine, could also help improve access to care for women living in remote areas[@tele2021].
+
+Further research is needed to better understand the factors that influence ANC completion rates and to develop effective interventions to improve maternal health care access and equity in Nepal. This could include studies examining the barriers to accessing care, such as cost, availability of services, and cultural attitudes towards maternal health care. Interventions could then be designed to address these barriers and improve access to care for women in Nepal.
+
+In conclusion, this study provides valuable insights into the association between ANC completion rates and accessibility to major cities in Nepal. The findings suggest that improving accessibility to care may be an effective way to improve maternal health outcomes in the country. Further research and policy action are needed to address this important issue.
+
+\newpage
+
+<!-- $$\\[0.5in]$$ -->
